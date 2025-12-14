@@ -135,7 +135,7 @@ uv tree
 ```
 
 ## Запуск тестов
-
+### Unit tests
 ```bash
 # С использованием uv
 uv run pytest test_main.py -v
@@ -143,6 +143,8 @@ uv run pytest test_main.py -v
 # Или после активации виртуального окружения
 pytest test_main.py -v
 ```
+### Stresstest
+[Как запустить стресстесты](stresstest_guide.md)
 
 ## Версионирование проекта
 
