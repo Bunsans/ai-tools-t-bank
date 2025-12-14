@@ -22,11 +22,11 @@ jobs:
       - name: Verify directory structure
         run: |
           ls -la
-          ls -la python3-app/
+          ls -la hw-6-vibe-code/python3-app/
       
       - name: Build Docker image
         run: |
-          docker build -t hospital-app:latest -f python3-app/Dockerfile python3-app
+          docker build -t hospital-app:latest -f hw-6-vibe-code/python3-app/Dockerfile hw-6-vibe-code/python3-app
       
       - name: Verify image was created
         run: |
@@ -49,14 +49,14 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r python3-app/requirements.txt
+          pip install -r hw-6-vibe-code/python3-app/requirements.txt
       
       - name: Run tests
         run: |
-          cd python3-app
+          cd hw-6-vibe-code/python3-app
           pytest test_main.py -v
         env:
-          PYTHONPATH: ${{ github.workspace }}/python3-app
+          PYTHONPATH: ${{ github.workspace }}/hw-6-vibe-code/python3-app
 
   lint:
     name: Lint Code
@@ -79,10 +79,10 @@ jobs:
       
       - name: Run ruff linter
         run: |
-          cd python3-app
+          cd hw-6-vibe-code/python3-app
           ruff check main.py test_main.py locustfile.py
       
       - name: Check code formatting
         run: |
-          cd python3-app
+          cd hw-6-vibe-code/python3-app
           ruff format --check main.py test_main.py locustfile.py
