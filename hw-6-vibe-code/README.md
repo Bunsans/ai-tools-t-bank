@@ -70,3 +70,7 @@ pytest test_main.py::TestHospitalHandler::test_hospital_post_success -v
 В проект были добавлены стресстесты
 
 [Как запустить стресстесты](stresstest_guide.md)
+
+
+# 3. Пишем документацию
+Обновил README.md, добавил документацию по API
