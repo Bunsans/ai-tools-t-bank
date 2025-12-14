@@ -9,7 +9,7 @@ from 0 to 100 users, testing all major endpoints of the application.
 import logging
 import random
 
-from locust import HttpUser, between, events, task
+from locust import HttpUser, LoadTestShape, between, events, task
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -195,9 +195,6 @@ class HospitalUser(HttpUser):
 
 
 # Custom load shape for gradual increase to 100 users
-from locust import LoadTestShape
-
-
 class GradualLoadShape(LoadTestShape):
     """
     Custom load shape that gradually increases users from 0 to 100 over 5 minutes,

@@ -12,8 +12,6 @@ import redis
 import tornado.ioloop
 import tornado.web
 
-from tornado.options import parse_command_line
-
 # Configuration constants
 PORT = 8888
 REDIS_HOST = os.environ.get("REDIS_HOST", "localhost")
