@@ -1,0 +1,29 @@
+[project]
+name = "hospital-management-app"
+version = "1.0.0"
+description = "Hospital management application with Tornado and Redis"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "redis==4.4.4",
+    "tornado==6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "pytest==7.4.3",
+    "pytest-tornado==0.8.1",
+    "fakeredis==2.20.1",
+]
+
+[tool.uv]
+# Отключаем установку проекта как пакета
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["."]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v"
+
