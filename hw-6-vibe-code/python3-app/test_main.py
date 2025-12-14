@@ -26,7 +26,7 @@ class TestApplication(AsyncHTTPTestCase):
         self.fake_redis.set("diagnosis:autoID", 1)
         self.fake_redis.set("db_initiated", 1)
         # Patch Redis connection to use fake Redis for all tests
-        self.redis_patcher = patch('main.r', self.fake_redis)
+        self.redis_patcher = patch("main.r", self.fake_redis)
         self.redis_patcher.start()
 
     def tearDown(self):
@@ -62,13 +62,16 @@ class TestHospitalHandler(TestApplication):
         """Test GET request when hospitals exist."""
         # Add a hospital to fake Redis
         self.fake_redis.set("hospital:autoID", 2)
-        self.fake_redis.hset("hospital:0", mapping={
-            b"name": b"Test Hospital",
-            b"address": b"123 Test St",
-            b"phone": b"123-456-7890",
-            b"beds_number": b"100"
-        })
-        
+        self.fake_redis.hset(
+            "hospital:0",
+            mapping={
+                b"name": b"Test Hospital",
+                b"address": b"123 Test St",
+                b"phone": b"123-456-7890",
+                b"beds_number": b"100",
+            },
+        )
+
         response = self.fetch("/hospital")
         self.assertEqual(response.code, 200)
 
@@ -77,7 +80,7 @@ class TestHospitalHandler(TestApplication):
         response = self.fetch(
             "/hospital",
             method="POST",
-            body="name=Test Hospital&address=123 Test St&beds_number=100&phone=123-456-7890"
+            body="name=Test Hospital&address=123 Test St&beds_number=100&phone=123-456-7890",
         )
         self.assertEqual(response.code, 200)
         self.assertIn(b"OK: ID 1", response.body)
@@ -88,7 +91,7 @@ class TestHospitalHandler(TestApplication):
         response = self.fetch(
             "/hospital",
             method="POST",
-            body="address=123 Test St&beds_number=100&phone=123-456-7890"
+            body="address=123 Test St&beds_number=100&phone=123-456-7890",
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -99,7 +102,7 @@ class TestHospitalHandler(TestApplication):
         response = self.fetch(
             "/hospital",
             method="POST",
-            body="name=Test Hospital&beds_number=100&phone=123-456-7890"
+            body="name=Test Hospital&beds_number=100&phone=123-456-7890",
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -110,7 +113,7 @@ class TestHospitalHandler(TestApplication):
         response = self.fetch(
             "/hospital",
             method="POST",
-            body="name=&address=123 Test St&beds_number=100&phone=123-456-7890"
+            body="name=&address=123 Test St&beds_number=100&phone=123-456-7890",
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"Hospital name and address required", response.body)
@@ -120,7 +123,7 @@ class TestHospitalHandler(TestApplication):
         response = self.fetch(
             "/hospital",
             method="POST",
-            body="name=Test Hospital&address=&beds_number=100&phone=123-456-7890"
+            body="name=Test Hospital&address=&beds_number=100&phone=123-456-7890",
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"Hospital name and address required", response.body)
@@ -130,7 +133,7 @@ class TestHospitalHandler(TestApplication):
         response = self.fetch(
             "/hospital",
             method="POST",
-            body="name=City Hospital&address=456 Main St&beds_number=250&phone=555-1234"
+            body="name=City Hospital&address=456 Main St&beds_number=250&phone=555-1234",
         )
         self.assertEqual(response.code, 200)
         # Verify data was stored
@@ -152,12 +155,15 @@ class TestDoctorHandler(TestApplication):
     def test_doctor_get_with_data(self):
         """Test GET request when doctors exist."""
         self.fake_redis.set("doctor:autoID", 2)
-        self.fake_redis.hset("doctor:0", mapping={
-            b"surname": b"Smith",
-            b"profession": b"Cardiologist",
-            b"hospital_ID": b"0"
-        })
-        
+        self.fake_redis.hset(
+            "doctor:0",
+            mapping={
+                b"surname": b"Smith",
+                b"profession": b"Cardiologist",
+                b"hospital_ID": b"0",
+            },
+        )
+
         response = self.fetch("/doctor")
         self.assertEqual(response.code, 200)
 
@@ -166,7 +172,7 @@ class TestDoctorHandler(TestApplication):
         response = self.fetch(
             "/doctor",
             method="POST",
-            body="surname=Smith&profession=Cardiologist&hospital_ID="
+            body="surname=Smith&profession=Cardiologist&hospital_ID=",
         )
         self.assertEqual(response.code, 200)
         self.assertIn(b"OK: ID 1", response.body)
@@ -176,17 +182,20 @@ class TestDoctorHandler(TestApplication):
         """Test POST request with valid hospital ID."""
         # First create a hospital
         self.fake_redis.set("hospital:autoID", 2)
-        self.fake_redis.hset("hospital:0", mapping={
-            b"name": b"Test Hospital",
-            b"address": b"123 Test St",
-            b"phone": b"123-456-7890",
-            b"beds_number": b"100"
-        })
-        
+        self.fake_redis.hset(
+            "hospital:0",
+            mapping={
+                b"name": b"Test Hospital",
+                b"address": b"123 Test St",
+                b"phone": b"123-456-7890",
+                b"beds_number": b"100",
+            },
+        )
+
         response = self.fetch(
             "/doctor",
             method="POST",
-            body="surname=Johnson&profession=Surgeon&hospital_ID=0"
+            body="surname=Johnson&profession=Surgeon&hospital_ID=0",
         )
         self.assertEqual(response.code, 200)
         self.assertIn(b"OK: ID 1", response.body)
@@ -194,9 +203,7 @@ class TestDoctorHandler(TestApplication):
     def test_doctor_post_missing_surname(self):
         """Test POST request with missing surname."""
         response = self.fetch(
-            "/doctor",
-            method="POST",
-            body="profession=Cardiologist&hospital_ID="
+            "/doctor", method="POST", body="profession=Cardiologist&hospital_ID="
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -205,9 +212,7 @@ class TestDoctorHandler(TestApplication):
     def test_doctor_post_missing_profession(self):
         """Test POST request with missing profession."""
         response = self.fetch(
-            "/doctor",
-            method="POST",
-            body="surname=Smith&hospital_ID="
+            "/doctor", method="POST", body="surname=Smith&hospital_ID="
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -218,7 +223,7 @@ class TestDoctorHandler(TestApplication):
         response = self.fetch(
             "/doctor",
             method="POST",
-            body="surname=Smith&profession=Cardiologist&hospital_ID=999"
+            body="surname=Smith&profession=Cardiologist&hospital_ID=999",
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"No hospital with such ID", response.body)
@@ -228,7 +233,7 @@ class TestDoctorHandler(TestApplication):
         response = self.fetch(
             "/doctor",
             method="POST",
-            body="surname=&profession=Cardiologist&hospital_ID="
+            body="surname=&profession=Cardiologist&hospital_ID=",
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"Surname and profession required", response.body)
@@ -245,13 +250,16 @@ class TestPatientHandler(TestApplication):
     def test_patient_get_with_data(self):
         """Test GET request when patients exist."""
         self.fake_redis.set("patient:autoID", 2)
-        self.fake_redis.hset("patient:0", mapping={
-            b"surname": b"Doe",
-            b"born_date": b"1990-01-01",
-            b"sex": b"M",
-            b"mpn": b"123456789"
-        })
-        
+        self.fake_redis.hset(
+            "patient:0",
+            mapping={
+                b"surname": b"Doe",
+                b"born_date": b"1990-01-01",
+                b"sex": b"M",
+                b"mpn": b"123456789",
+            },
+        )
+
         response = self.fetch("/patient")
         self.assertEqual(response.code, 200)
 
@@ -260,7 +268,7 @@ class TestPatientHandler(TestApplication):
         response = self.fetch(
             "/patient",
             method="POST",
-            body="surname=Doe&born_date=1990-01-01&sex=M&mpn=123456789"
+            body="surname=Doe&born_date=1990-01-01&sex=M&mpn=123456789",
         )
         self.assertEqual(response.code, 200)
         self.assertIn(b"OK: ID 1", response.body)
@@ -271,7 +279,7 @@ class TestPatientHandler(TestApplication):
         response = self.fetch(
             "/patient",
             method="POST",
-            body="surname=Jane&born_date=1985-05-15&sex=F&mpn=987654321"
+            body="surname=Jane&born_date=1985-05-15&sex=F&mpn=987654321",
         )
         self.assertEqual(response.code, 200)
         self.assertIn(b"OK: ID 1", response.body)
@@ -279,9 +287,7 @@ class TestPatientHandler(TestApplication):
     def test_patient_post_missing_surname(self):
         """Test POST request with missing surname."""
         response = self.fetch(
-            "/patient",
-            method="POST",
-            body="born_date=1990-01-01&sex=M&mpn=123456789"
+            "/patient", method="POST", body="born_date=1990-01-01&sex=M&mpn=123456789"
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -290,9 +296,7 @@ class TestPatientHandler(TestApplication):
     def test_patient_post_missing_born_date(self):
         """Test POST request with missing born_date."""
         response = self.fetch(
-            "/patient",
-            method="POST",
-            body="surname=Doe&sex=M&mpn=123456789"
+            "/patient", method="POST", body="surname=Doe&sex=M&mpn=123456789"
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -303,7 +307,7 @@ class TestPatientHandler(TestApplication):
         response = self.fetch(
             "/patient",
             method="POST",
-            body="surname=Doe&born_date=1990-01-01&mpn=123456789"
+            body="surname=Doe&born_date=1990-01-01&mpn=123456789",
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -312,9 +316,7 @@ class TestPatientHandler(TestApplication):
     def test_patient_post_missing_mpn(self):
         """Test POST request with missing mpn."""
         response = self.fetch(
-            "/patient",
-            method="POST",
-            body="surname=Doe&born_date=1990-01-01&sex=M"
+            "/patient", method="POST", body="surname=Doe&born_date=1990-01-01&sex=M"
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -325,7 +327,7 @@ class TestPatientHandler(TestApplication):
         response = self.fetch(
             "/patient",
             method="POST",
-            body="surname=Doe&born_date=1990-01-01&sex=X&mpn=123456789"
+            body="surname=Doe&born_date=1990-01-01&sex=X&mpn=123456789",
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"Sex must be 'M' or 'F'", response.body)
@@ -335,7 +337,7 @@ class TestPatientHandler(TestApplication):
         response = self.fetch(
             "/patient",
             method="POST",
-            body="surname=Doe&born_date=1990-01-01&sex=m&mpn=123456789"
+            body="surname=Doe&born_date=1990-01-01&sex=m&mpn=123456789",
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"Sex must be 'M' or 'F'", response.body)
@@ -343,9 +345,7 @@ class TestPatientHandler(TestApplication):
     def test_patient_post_empty_fields(self):
         """Test POST request with empty fields."""
         response = self.fetch(
-            "/patient",
-            method="POST",
-            body="surname=&born_date=&sex=&mpn="
+            "/patient", method="POST", body="surname=&born_date=&sex=&mpn="
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"All fields required", response.body)
@@ -363,20 +363,26 @@ class TestDiagnosisHandler(TestApplication):
         """Test GET request when diagnoses exist."""
         # First create a patient
         self.fake_redis.set("patient:autoID", 2)
-        self.fake_redis.hset("patient:0", mapping={
-            b"surname": b"Doe",
-            b"born_date": b"1990-01-01",
-            b"sex": b"M",
-            b"mpn": b"123456789"
-        })
-        
+        self.fake_redis.hset(
+            "patient:0",
+            mapping={
+                b"surname": b"Doe",
+                b"born_date": b"1990-01-01",
+                b"sex": b"M",
+                b"mpn": b"123456789",
+            },
+        )
+
         self.fake_redis.set("diagnosis:autoID", 2)
-        self.fake_redis.hset("diagnosis:0", mapping={
-            b"patient_ID": b"0",
-            b"type": b"Flu",
-            b"information": b"Common cold symptoms"
-        })
-        
+        self.fake_redis.hset(
+            "diagnosis:0",
+            mapping={
+                b"patient_ID": b"0",
+                b"type": b"Flu",
+                b"information": b"Common cold symptoms",
+            },
+        )
+
         response = self.fetch("/diagnosis")
         self.assertEqual(response.code, 200)
 
@@ -384,17 +390,20 @@ class TestDiagnosisHandler(TestApplication):
         """Test successful POST request to create a diagnosis."""
         # First create a patient
         self.fake_redis.set("patient:autoID", 2)
-        self.fake_redis.hset("patient:0", mapping={
-            b"surname": b"Doe",
-            b"born_date": b"1990-01-01",
-            b"sex": b"M",
-            b"mpn": b"123456789"
-        })
-        
+        self.fake_redis.hset(
+            "patient:0",
+            mapping={
+                b"surname": b"Doe",
+                b"born_date": b"1990-01-01",
+                b"sex": b"M",
+                b"mpn": b"123456789",
+            },
+        )
+
         response = self.fetch(
             "/diagnosis",
             method="POST",
-            body="patient_ID=0&type=Flu&information=Common cold symptoms"
+            body="patient_ID=0&type=Flu&information=Common cold symptoms",
         )
         self.assertEqual(response.code, 200)
         self.assertIn(b"OK: ID 1", response.body)
@@ -405,7 +414,7 @@ class TestDiagnosisHandler(TestApplication):
         response = self.fetch(
             "/diagnosis",
             method="POST",
-            body="type=Flu&information=Common cold symptoms"
+            body="type=Flu&information=Common cold symptoms",
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -416,7 +425,7 @@ class TestDiagnosisHandler(TestApplication):
         response = self.fetch(
             "/diagnosis",
             method="POST",
-            body="patient_ID=0&information=Common cold symptoms"
+            body="patient_ID=0&information=Common cold symptoms",
         )
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
@@ -427,7 +436,7 @@ class TestDiagnosisHandler(TestApplication):
         response = self.fetch(
             "/diagnosis",
             method="POST",
-            body="patient_ID=999&type=Flu&information=Common cold symptoms"
+            body="patient_ID=999&type=Flu&information=Common cold symptoms",
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"No patient with such ID", response.body)
@@ -436,17 +445,18 @@ class TestDiagnosisHandler(TestApplication):
         """Test POST request with empty information field (should be allowed)."""
         # First create a patient
         self.fake_redis.set("patient:autoID", 2)
-        self.fake_redis.hset("patient:0", mapping={
-            b"surname": b"Doe",
-            b"born_date": b"1990-01-01",
-            b"sex": b"M",
-            b"mpn": b"123456789"
-        })
-        
+        self.fake_redis.hset(
+            "patient:0",
+            mapping={
+                b"surname": b"Doe",
+                b"born_date": b"1990-01-01",
+                b"sex": b"M",
+                b"mpn": b"123456789",
+            },
+        )
+
         response = self.fetch(
-            "/diagnosis",
-            method="POST",
-            body="patient_ID=0&type=Flu&information="
+            "/diagnosis", method="POST", body="patient_ID=0&type=Flu&information="
         )
         self.assertEqual(response.code, 200)
 
@@ -462,13 +472,16 @@ class TestDoctorPatientHandler(TestApplication):
     def test_doctor_patient_get_with_data(self):
         """Test GET request when doctor-patient relationships exist."""
         self.fake_redis.set("doctor:autoID", 2)
-        self.fake_redis.hset("doctor:0", mapping={
-            b"surname": b"Smith",
-            b"profession": b"Cardiologist",
-            b"hospital_ID": b"0"
-        })
+        self.fake_redis.hset(
+            "doctor:0",
+            mapping={
+                b"surname": b"Smith",
+                b"profession": b"Cardiologist",
+                b"hospital_ID": b"0",
+            },
+        )
         self.fake_redis.sadd("doctor-patient:0", "1")
-        
+
         response = self.fetch("/doctor-patient")
         self.assertEqual(response.code, 200)
 
@@ -476,52 +489,48 @@ class TestDoctorPatientHandler(TestApplication):
         """Test successful POST request to link doctor and patient."""
         # Create a doctor
         self.fake_redis.set("doctor:autoID", 2)
-        self.fake_redis.hset("doctor:0", mapping={
-            b"surname": b"Smith",
-            b"profession": b"Cardiologist",
-            b"hospital_ID": b"0"
-        })
-        
+        self.fake_redis.hset(
+            "doctor:0",
+            mapping={
+                b"surname": b"Smith",
+                b"profession": b"Cardiologist",
+                b"hospital_ID": b"0",
+            },
+        )
+
         # Create a patient
         self.fake_redis.set("patient:autoID", 2)
-        self.fake_redis.hset("patient:0", mapping={
-            b"surname": b"Doe",
-            b"born_date": b"1990-01-01",
-            b"sex": b"M",
-            b"mpn": b"123456789"
-        })
-        
+        self.fake_redis.hset(
+            "patient:0",
+            mapping={
+                b"surname": b"Doe",
+                b"born_date": b"1990-01-01",
+                b"sex": b"M",
+                b"mpn": b"123456789",
+            },
+        )
+
         response = self.fetch(
-            "/doctor-patient",
-            method="POST",
-            body="doctor_ID=0&patient_ID=0"
+            "/doctor-patient", method="POST", body="doctor_ID=0&patient_ID=0"
         )
         self.assertEqual(response.code, 200)
         self.assertIn(b"OK: doctor ID: 0", response.body)
         self.assertIn(b"patient ID: 0", response.body)
-        
+
         # Verify relationship was stored
         patients = self.fake_redis.smembers("doctor-patient:0")
         self.assertIn(b"0", patients)
 
     def test_doctor_patient_post_missing_doctor_id(self):
         """Test POST request with missing doctor_ID."""
-        response = self.fetch(
-            "/doctor-patient",
-            method="POST",
-            body="patient_ID=0"
-        )
+        response = self.fetch("/doctor-patient", method="POST", body="patient_ID=0")
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
         self.assertIn(b"Missing argument", response.body)
 
     def test_doctor_patient_post_missing_patient_id(self):
         """Test POST request with missing patient_ID."""
-        response = self.fetch(
-            "/doctor-patient",
-            method="POST",
-            body="doctor_ID=0"
-        )
+        response = self.fetch("/doctor-patient", method="POST", body="doctor_ID=0")
         self.assertEqual(response.code, 400)
         # Tornado throws MissingArgumentError when argument is missing
         self.assertIn(b"Missing argument", response.body)
@@ -530,17 +539,18 @@ class TestDoctorPatientHandler(TestApplication):
         """Test POST request with non-existent doctor ID."""
         # Create a patient but no doctor
         self.fake_redis.set("patient:autoID", 2)
-        self.fake_redis.hset("patient:0", mapping={
-            b"surname": b"Doe",
-            b"born_date": b"1990-01-01",
-            b"sex": b"M",
-            b"mpn": b"123456789"
-        })
-        
+        self.fake_redis.hset(
+            "patient:0",
+            mapping={
+                b"surname": b"Doe",
+                b"born_date": b"1990-01-01",
+                b"sex": b"M",
+                b"mpn": b"123456789",
+            },
+        )
+
         response = self.fetch(
-            "/doctor-patient",
-            method="POST",
-            body="doctor_ID=999&patient_ID=0"
+            "/doctor-patient", method="POST", body="doctor_ID=999&patient_ID=0"
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"No such ID for doctor or patient", response.body)
@@ -549,16 +559,17 @@ class TestDoctorPatientHandler(TestApplication):
         """Test POST request with non-existent patient ID."""
         # Create a doctor but no patient
         self.fake_redis.set("doctor:autoID", 2)
-        self.fake_redis.hset("doctor:0", mapping={
-            b"surname": b"Smith",
-            b"profession": b"Cardiologist",
-            b"hospital_ID": b"0"
-        })
-        
+        self.fake_redis.hset(
+            "doctor:0",
+            mapping={
+                b"surname": b"Smith",
+                b"profession": b"Cardiologist",
+                b"hospital_ID": b"0",
+            },
+        )
+
         response = self.fetch(
-            "/doctor-patient",
-            method="POST",
-            body="doctor_ID=0&patient_ID=999"
+            "/doctor-patient", method="POST", body="doctor_ID=0&patient_ID=999"
         )
         self.assertEqual(response.code, 400)
         self.assertIn(b"No such ID for doctor or patient", response.body)
@@ -567,43 +578,48 @@ class TestDoctorPatientHandler(TestApplication):
         """Test linking multiple patients to the same doctor."""
         # Create a doctor
         self.fake_redis.set("doctor:autoID", 2)
-        self.fake_redis.hset("doctor:0", mapping={
-            b"surname": b"Smith",
-            b"profession": b"Cardiologist",
-            b"hospital_ID": b"0"
-        })
-        
+        self.fake_redis.hset(
+            "doctor:0",
+            mapping={
+                b"surname": b"Smith",
+                b"profession": b"Cardiologist",
+                b"hospital_ID": b"0",
+            },
+        )
+
         # Create two patients
         self.fake_redis.set("patient:autoID", 3)
-        self.fake_redis.hset("patient:0", mapping={
-            b"surname": b"Doe",
-            b"born_date": b"1990-01-01",
-            b"sex": b"M",
-            b"mpn": b"123456789"
-        })
-        self.fake_redis.hset("patient:1", mapping={
-            b"surname": b"Jane",
-            b"born_date": b"1985-05-15",
-            b"sex": b"F",
-            b"mpn": b"987654321"
-        })
-        
+        self.fake_redis.hset(
+            "patient:0",
+            mapping={
+                b"surname": b"Doe",
+                b"born_date": b"1990-01-01",
+                b"sex": b"M",
+                b"mpn": b"123456789",
+            },
+        )
+        self.fake_redis.hset(
+            "patient:1",
+            mapping={
+                b"surname": b"Jane",
+                b"born_date": b"1985-05-15",
+                b"sex": b"F",
+                b"mpn": b"987654321",
+            },
+        )
+
         # Link first patient
         response1 = self.fetch(
-            "/doctor-patient",
-            method="POST",
-            body="doctor_ID=0&patient_ID=0"
+            "/doctor-patient", method="POST", body="doctor_ID=0&patient_ID=0"
         )
         self.assertEqual(response1.code, 200)
-        
+
         # Link second patient
         response2 = self.fetch(
-            "/doctor-patient",
-            method="POST",
-            body="doctor_ID=0&patient_ID=1"
+            "/doctor-patient", method="POST", body="doctor_ID=0&patient_ID=1"
         )
         self.assertEqual(response2.code, 200)
-        
+
         # Verify both patients are linked
         patients = self.fake_redis.smembers("doctor-patient:0")
         self.assertIn(b"0", patients)
@@ -617,10 +633,10 @@ class TestDatabaseInitialization(TestApplication):
         """Test that init_db creates all required autoID keys."""
         # Clear the fake Redis
         self.fake_redis.flushdb()
-        
+
         # Call init_db (main.r is already patched in setUp)
         main.init_db()
-        
+
         # Verify all autoID keys were created
         self.assertEqual(self.fake_redis.get("hospital:autoID"), b"1")
         self.assertEqual(self.fake_redis.get("doctor:autoID"), b"1")
@@ -636,10 +652,10 @@ class TestDatabaseInitialization(TestApplication):
         self.fake_redis.set("patient:autoID", 10)
         self.fake_redis.set("diagnosis:autoID", 2)
         self.fake_redis.set("db_initiated", 1)
-        
+
         # Call init_db (main.r is already patched in setUp)
         main.init_db()
-        
+
         # Verify existing values were preserved
         self.assertEqual(self.fake_redis.get("hospital:autoID"), b"5")
         self.assertEqual(self.fake_redis.get("doctor:autoID"), b"3")
@@ -653,42 +669,42 @@ class TestEdgeCases(TestApplication):
     def test_hospital_auto_id_increment(self):
         """Test that hospital autoID increments correctly."""
         initial_id = int(self.fake_redis.get("hospital:autoID"))
-        
+
         response = self.fetch(
             "/hospital",
             method="POST",
-            body="name=Hospital1&address=Address1&beds_number=100&phone=123"
+            body="name=Hospital1&address=Address1&beds_number=100&phone=123",
         )
         self.assertEqual(response.code, 200)
-        
+
         new_id = int(self.fake_redis.get("hospital:autoID"))
         self.assertEqual(new_id, initial_id + 1)
 
     def test_doctor_auto_id_increment(self):
         """Test that doctor autoID increments correctly."""
         initial_id = int(self.fake_redis.get("doctor:autoID"))
-        
+
         response = self.fetch(
             "/doctor",
             method="POST",
-            body="surname=Doctor1&profession=Surgeon&hospital_ID="
+            body="surname=Doctor1&profession=Surgeon&hospital_ID=",
         )
         self.assertEqual(response.code, 200)
-        
+
         new_id = int(self.fake_redis.get("doctor:autoID"))
         self.assertEqual(new_id, initial_id + 1)
 
     def test_patient_auto_id_increment(self):
         """Test that patient autoID increments correctly."""
         initial_id = int(self.fake_redis.get("patient:autoID"))
-        
+
         response = self.fetch(
             "/patient",
             method="POST",
-            body="surname=Patient1&born_date=1990-01-01&sex=M&mpn=123"
+            body="surname=Patient1&born_date=1990-01-01&sex=M&mpn=123",
         )
         self.assertEqual(response.code, 200)
-        
+
         new_id = int(self.fake_redis.get("patient:autoID"))
         self.assertEqual(new_id, initial_id + 1)
 
@@ -696,22 +712,23 @@ class TestEdgeCases(TestApplication):
         """Test that diagnosis autoID increments correctly."""
         # Create a patient first
         self.fake_redis.set("patient:autoID", 2)
-        self.fake_redis.hset("patient:0", mapping={
-            b"surname": b"Doe",
-            b"born_date": b"1990-01-01",
-            b"sex": b"M",
-            b"mpn": b"123456789"
-        })
-        
+        self.fake_redis.hset(
+            "patient:0",
+            mapping={
+                b"surname": b"Doe",
+                b"born_date": b"1990-01-01",
+                b"sex": b"M",
+                b"mpn": b"123456789",
+            },
+        )
+
         initial_id = int(self.fake_redis.get("diagnosis:autoID"))
-        
+
         response = self.fetch(
-            "/diagnosis",
-            method="POST",
-            body="patient_ID=0&type=Flu&information=Test"
+            "/diagnosis", method="POST", body="patient_ID=0&type=Flu&information=Test"
         )
         self.assertEqual(response.code, 200)
-        
+
         new_id = int(self.fake_redis.get("diagnosis:autoID"))
         self.assertEqual(new_id, initial_id + 1)
 
@@ -719,19 +736,25 @@ class TestEdgeCases(TestApplication):
         """Test GET request when there are gaps in hospital IDs."""
         self.fake_redis.set("hospital:autoID", 5)
         # Only create hospitals at indices 0 and 3
-        self.fake_redis.hset("hospital:0", mapping={
-            b"name": b"Hospital 0",
-            b"address": b"Address 0",
-            b"phone": b"123",
-            b"beds_number": b"100"
-        })
-        self.fake_redis.hset("hospital:3", mapping={
-            b"name": b"Hospital 3",
-            b"address": b"Address 3",
-            b"phone": b"456",
-            b"beds_number": b"200"
-        })
-        
+        self.fake_redis.hset(
+            "hospital:0",
+            mapping={
+                b"name": b"Hospital 0",
+                b"address": b"Address 0",
+                b"phone": b"123",
+                b"beds_number": b"100",
+            },
+        )
+        self.fake_redis.hset(
+            "hospital:3",
+            mapping={
+                b"name": b"Hospital 3",
+                b"address": b"Address 3",
+                b"phone": b"456",
+                b"beds_number": b"200",
+            },
+        )
+
         response = self.fetch("/hospital")
         self.assertEqual(response.code, 200)
 
@@ -740,11 +763,10 @@ class TestEdgeCases(TestApplication):
         response = self.fetch(
             "/doctor",
             method="POST",
-            body="surname=Smith&profession=Cardiologist&hospital_ID="
+            body="surname=Smith&profession=Cardiologist&hospital_ID=",
         )
         self.assertEqual(response.code, 200)
-        
+
         # Verify doctor was created with empty hospital_ID
         doctor_data = self.fake_redis.hgetall("doctor:1")
         self.assertEqual(doctor_data[b"hospital_ID"], b"")
-
