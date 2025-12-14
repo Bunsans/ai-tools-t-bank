@@ -19,10 +19,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       
-      - name: Build Docker image
-        working-directory: ./python3-app
+      - name: Verify directory structure
         run: |
-          docker build -t hospital-app:latest .
+          ls -la
+          ls -la python3-app/
+      
+      - name: Build Docker image
+        run: |
+          docker build -t hospital-app:latest -f python3-app/Dockerfile python3-app
       
       - name: Verify image was created
         run: |
@@ -43,14 +47,13 @@ jobs:
           cache: 'pip'
       
       - name: Install dependencies
-        working-directory: ./python3-app
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r python3-app/requirements.txt
       
       - name: Run tests
-        working-directory: ./python3-app
         run: |
+          cd python3-app
           pytest test_main.py -v
         env:
           PYTHONPATH: ${{ github.workspace }}/python3-app
@@ -75,11 +78,11 @@ jobs:
           pip install ruff
       
       - name: Run ruff linter
-        working-directory: ./python3-app
         run: |
+          cd python3-app
           ruff check main.py test_main.py locustfile.py
       
       - name: Check code formatting
-        working-directory: ./python3-app
         run: |
+          cd python3-app
           ruff format --check main.py test_main.py locustfile.py
